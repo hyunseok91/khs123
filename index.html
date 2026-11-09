@@ -1,0 +1,858 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>국가기술자격 필기 & 실기 모의고사 포털</title>
+    <style>
+        :root {
+            --primary-color: #2563eb;
+            --primary-hover: #1d4ed8;
+            --bg-color: #f1f5f9;
+            --card-bg: #ffffff;
+            --text-color: #0f172a;
+            --text-light: #64748b;
+            --border-color: #cbd5e1;
+            --success-color: #10b981;
+            --danger-color: #ef4444;
+            --warning-color: #f59e0b;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 1100px;
+            background: var(--card-bg);
+            border-radius: 12px;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.08);
+            overflow: hidden;
+            margin: 20px;
+        }
+
+        header {
+            background: #1e293b;
+            color: white;
+            padding: 16px 24px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        header h1 {
+            font-size: 1.3rem;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .screen {
+            padding: 24px;
+            display: none;
+            max-height: 82vh;
+            overflow-y: auto;
+        }
+
+        .screen.active {
+            display: block;
+        }
+
+        .home-screen h2 {
+            margin-bottom: 8px;
+            font-size: 1.3rem;
+        }
+
+        .home-screen p {
+            color: var(--text-light);
+            margin-bottom: 24px;
+        }
+
+        .exam-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+            gap: 16px;
+        }
+
+        .exam-card {
+            background: #f8fafc;
+            border: 2px solid var(--border-color);
+            border-radius: 10px;
+            padding: 18px;
+            transition: all 0.2s ease;
+            text-align: center;
+        }
+
+        .exam-card:hover {
+            border-color: var(--primary-color);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(37, 99, 235, 0.1);
+        }
+
+        .exam-card h3 {
+            margin-bottom: 6px;
+            color: var(--primary-color);
+            font-size: 1.15rem;
+        }
+
+        .exam-card p {
+            font-size: 0.85rem;
+            margin-bottom: 14px;
+            color: var(--text-light);
+            line-height: 1.4;
+        }
+
+        .card-btn-group {
+            display: flex;
+            gap: 6px;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        .btn-sm {
+            padding: 8px 12px;
+            font-size: 0.82rem;
+            border-radius: 6px;
+            border: none;
+            cursor: pointer;
+            font-weight: 600;
+            color: white;
+        }
+
+        .btn-real { background-color: var(--primary-color); }
+        .btn-real:hover { background-color: var(--primary-hover); }
+
+        .btn-instant { background-color: var(--warning-color); }
+        .btn-instant:hover { background-color: #d97706; }
+
+        .btn-essay { background-color: #7c3aed; }
+        .btn-essay:hover { background-color: #6d28d9; }
+
+        .cbt-layout {
+            display: grid;
+            grid-template-columns: 1fr 310px;
+            gap: 20px;
+        }
+
+        @media (max-width: 850px) {
+            .cbt-layout {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .question-area {
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+        }
+
+        .exam-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 16px;
+            padding-bottom: 12px;
+            border-bottom: 2px solid var(--border-color);
+        }
+
+        .timer-group {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .timer {
+            background: #eff6ff;
+            color: var(--primary-color);
+            padding: 6px 14px;
+            border-radius: 20px;
+            font-weight: bold;
+            font-size: 0.9rem;
+            border: 1px solid #bfdbfe;
+        }
+
+        .question-box {
+            font-size: 1.05rem;
+            font-weight: 600;
+            margin-bottom: 18px;
+            line-height: 1.5;
+            min-height: 50px;
+        }
+
+        .options-list {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+
+        .option-item {
+            display: flex;
+            align-items: center;
+            padding: 12px 14px;
+            border: 2px solid var(--border-color);
+            border-radius: 8px;
+            cursor: pointer;
+            transition: background 0.2s, border-color 0.2s;
+            font-size: 0.95rem;
+        }
+
+        .option-item:hover { background: #f8fafc; }
+        .option-item.correct { border-color: var(--success-color); background-color: #ecfdf5; font-weight: bold; }
+        .option-item.incorrect { border-color: var(--danger-color); background-color: #fef2f2; }
+        .option-item input { margin-right: 12px; transform: scale(1.2); }
+
+        .essay-input-area {
+            margin-bottom: 20px;
+        }
+        .essay-textarea {
+            width: 100%;
+            height: 120px;
+            padding: 12px;
+            border: 2px solid var(--border-color);
+            border-radius: 8px;
+            font-size: 1rem;
+            resize: vertical;
+            outline: none;
+            transition: border-color 0.2s;
+        }
+        .essay-textarea:focus {
+            border-color: var(--primary-color);
+        }
+
+        .instant-explanation {
+            display: none;
+            background: #eff6ff;
+            border: 1px solid #93c5fd;
+            border-radius: 8px;
+            padding: 14px;
+            margin-bottom: 20px;
+            font-size: 0.9rem;
+            color: #1e3a8a;
+            line-height: 1.5;
+        }
+
+        .omr-panel {
+            background: #f8fafc;
+            border: 2px solid var(--border-color);
+            border-radius: 10px;
+            padding: 14px;
+            display: flex;
+            flex-direction: column;
+            max-height: 60vh;
+        }
+
+        .omr-header {
+            font-weight: bold;
+            font-size: 0.95rem;
+            margin-bottom: 10px;
+            padding-bottom: 8px;
+            border-bottom: 1px solid var(--border-color);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .omr-grid {
+            display: grid;
+            grid-template-columns: repeat(5, 1fr);
+            gap: 6px;
+            overflow-y: auto;
+            padding-right: 4px;
+        }
+
+        .omr-btn {
+            background: #ffffff;
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            padding: 6px 0;
+            font-size: 0.8rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.15s;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 2px;
+        }
+
+        .omr-btn:hover { border-color: var(--primary-color); background-color: #eff6ff; }
+        .omr-btn.current { border: 2px solid var(--primary-color); color: var(--primary-color); background: #dbeafe; }
+        .omr-btn.marked { background: #334155; color: #ffffff; border-color: #0f172a; }
+        .omr-btn .mark-val { font-size: 0.7rem; color: #f59e0b; }
+        .omr-btn.marked .mark-val { color: #38bdf8; font-weight: bold; }
+
+        .btn-container {
+            display: flex;
+            justify-content: space-between;
+            gap: 8px;
+            margin-top: 10px;
+        }
+
+        button.btn {
+            background: var(--primary-color);
+            color: white;
+            border: none;
+            padding: 10px 18px;
+            border-radius: 6px;
+            font-size: 0.95rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+
+        button.btn:hover { background: var(--primary-hover); }
+        button.btn-secondary { background: var(--text-light); }
+        button.btn-secondary:hover { background: #475569; }
+        button.btn-home { background: #e2e8f0; color: #334155; }
+        button.btn-home:hover { background: #cbd5e1; }
+
+        .result-screen { text-align: center; }
+
+        .score-circle {
+            width: 130px;
+            height: 130px;
+            border-radius: 50%;
+            background: #eff6ff;
+            color: var(--primary-color);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            margin: 0 auto 16px;
+            border: 4px solid var(--primary-color);
+        }
+
+        .score-circle span.score { font-size: 2.2rem; font-weight: bold; }
+
+        .review-container {
+            text-align: left;
+            margin-top: 24px;
+            border-top: 1px solid var(--border-color);
+            padding-top: 16px;
+        }
+
+        .review-item {
+            background: #f8fafc;
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 14px;
+            margin-bottom: 12px;
+        }
+
+        .review-item.correct { border-left: 5px solid var(--success-color); }
+        .review-item.incorrect { border-left: 5px solid var(--danger-color); }
+
+        .review-question { font-weight: 600; margin-bottom: 8px; font-size: 0.95rem; }
+        .review-answer-info { font-size: 0.85rem; color: var(--text-light); margin-bottom: 6px; }
+        .review-explanation { font-size: 0.9rem; color: var(--primary-color); background: #eff6ff; padding: 8px 12px; border-radius: 6px; line-height: 1.4; }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <header>
+            <h1>🖥️ 국가기술자격 필기 & 실기 모의고사 포털</h1>
+        </header>
+
+        <!-- 1. 메인 과목 선택 화면 -->
+        <div id="home-screen" class="screen active home-screen">
+            <h2>응시할 종목을 선택하세요</h2>
+            <div class="exam-grid">
+                <!-- 기계가공기능장 -->
+                <div class="exam-card">
+                    <h3>기계가공기능장</h3>
+                    <p>금속재료, 공작법, 절삭, 측정 등<br><b>모의고사 (60분)</b></p>
+                    <div class="card-btn-group">
+                        <button class="btn-sm btn-real" onclick="startExam('machiningMaster', 3600, '기계가공기능장', false, false)">실전 모의고사</button>
+                        <button class="btn-sm btn-instant" onclick="startExam('machiningMaster', 3600, '기계가공기능장', true, false)">한 문제씩 풀기</button>
+                    </div>
+                </div>
+
+                <!-- 산업안전기사 -->
+                <div class="exam-card">
+                    <h3>산업안전기사</h3>
+                    <p>안전관리, 인간공학, 기계·전기·건설<br><b>필기 및 실기(주관식) 선택 가능</b></p>
+                    <div class="card-btn-group" style="flex-direction: column; gap: 4px;">
+                        <div style="display: flex; gap: 4px; justify-content: center;">
+                            <button class="btn-sm btn-real" onclick="startExam('industrialSafety', 5400, '산업안전기사 (필기)', false, false)">필기 실전</button>
+                            <button class="btn-sm btn-instant" onclick="startExam('industrialSafety', 5400, '산업안전기사 (필기)', true, false)">필기 해설형</button>
+                        </div>
+                        <button class="btn-sm btn-essay" onclick="startExam('industrialSafetyEssay', 7200, '산업안전기사 실기 (필답형)', false, true)" style="width: 100%;">🔥 실기 필답형 모의고사</button>
+                    </div>
+                </div>
+
+                <!-- 전기기능사 -->
+                <div class="exam-card">
+                    <h3>전기기능사</h3>
+                    <p>전기이론, 전기기기, 전기설비 제어<br><b>모의고사 (60분)</b></p>
+                    <div class="card-btn-group">
+                        <button class="btn-sm btn-real" onclick="startExam('electricCraftsman', 3600, '전기기능사', false, false)">실전 모의고사</button>
+                        <button class="btn-sm btn-instant" onclick="startExam('electricCraftsman', 3600, '전기기능사', true, false)">한 문제씩 풀기</button>
+                    </div>
+                </div>
+
+                <!-- 정보처리기사 -->
+                <div class="exam-card">
+                    <h3>정보처리기사</h3>
+                    <p>SW설계/개발, DB, 프로그래밍 언어<br><b>모의고사 (90분)</b></p>
+                    <div class="card-btn-group">
+                        <button class="btn-sm btn-real" onclick="startExam('informationProcessing', 5400, '정보처리기사', false, false)">실전 모의고사</button>
+                        <button class="btn-sm btn-instant" onclick="startExam('informationProcessing', 5400, '정보처리기사', true, false)">한 문제씩 풀기</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 2. 시험 풀이 화면 -->
+        <div id="exam-screen" class="screen">
+            <div class="exam-header">
+                <div>
+                    <span id="exam-mode-badge" style="background:#dbeafe; color:#1e40af; padding:4px 8px; border-radius:4px; font-size:0.8rem; font-weight:bold; margin-right:8px;">실전 모드</span>
+                    <span id="question-progress" style="font-weight: bold; color: var(--text-light);">문제 1 / 60</span>
+                </div>
+                <div class="timer-group">
+                    <button class="btn-sm btn-home" onclick="confirmGoHome()">🏠 메인으로</button>
+                    <div class="timer" id="timer">⏱️ 60:00</div>
+                </div>
+            </div>
+
+            <div class="cbt-layout">
+                <div class="question-area">
+                    <div>
+                        <div class="question-box" id="question-text">문제가 여기에 표시됩니다.</div>
+                        
+                        <!-- 객관식 보기 영역 -->
+                        <div class="options-list" id="options-container"></div>
+
+                        <!-- 실기 주관식 입력 영역 -->
+                        <div class="essay-input-area" id="essay-input-container" style="display: none;">
+                            <textarea id="essay-answer" class="essay-textarea" placeholder="이곳에 실기 필답형 정답을 주관식으로 상세히 입력하세요 (핵심 키워드 포함)..." oninput="saveEssayAnswer()"></textarea>
+                        </div>
+
+                        <div class="instant-explanation" id="instant-explanation"></div>
+                    </div>
+
+                    <div class="btn-container">
+                        <button class="btn btn-secondary" id="prev-btn" onclick="prevQuestion()" style="display:none;">이전</button>
+                        <button class="btn btn-home" onclick="confirmGoHome()">처음 화면으로</button>
+                        <button class="btn" id="next-btn" onclick="nextQuestion()">다음 문제</button>
+                    </div>
+                </div>
+
+                <div class="omr-panel">
+                    <div class="omr-header">
+                        <span id="panel-title-text">📋 OMR 답안지</span>
+                        <span id="omr-status-text" style="font-size:0.75rem; color:var(--primary-color);">남은 문제: 0개</span>
+                    </div>
+                    <div class="omr-grid" id="omr-grid"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 3. 결과 화면 -->
+        <div id="result-screen" class="screen result-screen">
+            <h2>시험이 종료되었습니다!</h2>
+            <p>최종 성적 및 정·오답 상세 해설을 확인하세요.</p>
+            
+            <div class="score-circle">
+                <span class="score" id="final-score">0</span>
+                <span style="font-size: 0.85rem;">점</span>
+            </div>
+
+            <p id="result-message" style="font-weight: bold; font-size: 1.05rem; color: var(--text-color); margin-bottom: 20px;">합격입니다!</p>
+            
+            <button class="btn" onclick="goHome()" style="margin-bottom: 20px;">처음으로 돌아가기</button>
+
+            <div class="review-container">
+                <h3>📝 문항별 정답 및 모범 답안 해설</h3>
+                <div id="review-list" style="margin-top: 12px;"></div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const masterExamData = {
+            machiningMaster: [
+                { q: "절삭공구 재료 중 고온강도가 매우 높으며 백색 토기 모양으로 고속 절삭에 주로 사용되는 세라믹 공구의 주성분은?", opts: ["산화알루미늄(Al2O3)", "탄화텅스텐(WC)", "탄화티타늄(TiC)", "질화규소(Si3N4)"], ans: 0, exp: "세라믹 공구의 주성분은 산화알루미늄(Al2O3)입니다." },
+                { q: "탄소강을 재결정 온도 이상 가열 후 공기 중에서 서서히 냉각시켜 조직을 표준화하고 응력을 제거하는 열처리는?", opts: ["불림(Normalizing)", "담금질(Quenching)", "뜨임(Tempering)", "풀림(Annealing)"], ans: 0, exp: "공기 중 냉각하여 표준 조직을 얻는 열처리는 불림입니다." },
+                { q: "오스테나이트계 스테인리스강의 대표 규격으로 18% Cr - 8% Ni 조성을 가지는 것은?", opts: ["STS 304", "STS 410", "STS 430", "STS 316"], ans: 0, exp: "STS 304는 가장 널리 쓰이는 18-8 스테인리스강입니다." },
+                { q: "밀링가공에서 커터 회전 방향이 이송 방향과 반대이며 절삭저항이 위로 작용하는 절삭 방식은?", opts: ["상향절삭", "하향절삭", "정면절삭", "단면절삭"], ans: 0, exp: "상향절삭은 커터 회전과 이송 방향이 서로 반대입니다." },
+                { q: "브리넬 경도 시험에서 누산기로 주로 사용되는 압자의 재질과 형태는?", opts: ["구형의 강구 또는 초경합금구", "원추형 다이아몬드", "사각뿔 다이아몬드", "구형 유리구"], ans: 0, exp: "브리넬 경도는 구형의 강구나 초경합금구를 압자로 사용합니다." }
+            ],
+            industrialSafety: [
+                { q: "하인리히(Heinrich)의 재해 연쇄성 이론(사고 발생 5단계) 중 제3단계에 해당하는 것은?", opts: ["불안전한 행동 및 불안전한 상태", "사회적 환경", "개인적 결함", "사고 및 재해"], ans: 0, exp: "제3단계는 불안전한 행동 및 상태입니다." },
+                { q: "산업안전보건법상 안전보건관리위원회를 두어야 하는 최소 상시 근로자 수 기준은? (건설업 제외)", opts: ["50명 이상", "30명 이상", "100명 이상", "300명 이상"], ans: 0, exp: "상시 근로자 50인 이상 사업장은 의무 설치 대상입니다." },
+                { q: "무재해 운동 3원칙 중 '잠재위험요인을 사전에 발견·파악하여 해결함'을 뜻하는 원칙은?", opts: ["선점의 원칙", "무의 원칙", "참가의 원칙", "자발의 원칙"], ans: 0, exp: "위험예지 및 선점의 원칙에 해당합니다." },
+                { q: "프레스 양수기동식 방호장치 누름버튼 간 최소 내측 거리 기준은?", opts: ["300mm 이상", "100mm 이상", "200mm 이상", "500mm 이상"], ans: 0, exp: "두 손 조작 방지를 위해 버튼 간격은 300mm 이상이어야 합니다." },
+                { q: "국소배기장치 후드 형식에 해당하지 않는 것은?", opts: ["외조식", "포위식", "부스식", "외부식"], ans: 0, exp: "외조식은 국소배기 후드 형식이 아닙니다." }
+            ],
+            industrialSafetyEssay: [
+                { q: "산업안전보건법령상, 사업주는 근로자가 추락하거나 넘어질 위험이 있는 장소에 안전난간을 설치해야 한다. 안전난간의 주요 구성 요소 4가지를 쓰시오.", essayAns: "상부난간대, 중간난간대, 발끝막이판, 난간기둥", exp: "안전난간은 상부난간대, 중간난간대, 발끝막이판 및 난간기둥으로 구성되어야 합니다." },
+                { q: "산업안전보건법상 프레스 및 전단기 안전을 위해 설치하는 방호장치의 종류 4가지를 쓰시오.", essayAns: "게이트가드식, 양수기동식, 광전자식, 수인식, 손철수식", exp: "프레스 방호장치에는 광전자식, 양수기동식, 게이트가드식, 수인식 등이 있습니다." },
+                { q: "산업재해 분석 지표 중 '도수율(Frequency Rate)'의 정의와 공식을 쓰시오.", essayAns: "1백만 연근로시간당 발생하는 재해 발생 건수. 공식: (재해건수 / 연근로총시간수) * 1,000,000", exp: "도수율은 1백만 시간당 재해 건수를 나타내는 지표입니다." },
+                { q: "안전교육의 3단계 중 작업 현장에서 관리감독자가 직속 부하를 대상으로 일대일로 실시하는 교육 방법은?", essayAns: "TWI (Training Within Industry) 또는 OJT (직장내 교육훈련)", exp: "현장에서 직접 실무와 안전을 가르치는 교육은 OJT(직장내 교육훈련)입니다." },
+                { q: "보호구 안전인증 고시상 안전모의 종류 중 'AB형'과 'AE형'이 뜻하는 방호 성능을 각각 쓰시오.", essayAns: "AB형: 내추락 및 내관통성 / AE형: 내추락 및 전기절연성", exp: "A는 낙하·충격, B는 관통, E는 전기절연 성능을 뜻합니다." }
+            ],
+            electricCraftsman: [
+                { q: "비오-사바르(Biot-Savart) 법칙은 전류가 흐르는 도선 주변에 발생하는 무엇을 계산하는 법칙인가?", opts: ["자계의 세기", "전계의 세기", "정전용량", "유도기전력"], ans: 0, exp: "비오-사바르 법칙은 전류에 의한 자계의 세기를 구합니다." },
+                { q: "1[kWh]의 전력량을 열량으로 환산하면 약 얼마인가?", opts: ["860 kcal", "4186 kcal", "1000 kcal", "3600 kcal"], ans: 0, exp: "1 kWh는 약 860 kcal에 해당합니다." },
+                { q: "플레밍의 왼손법칙에서 가운데 손가락(중지)이 가리키는 방향은?", opts: ["전류의 방향(I)", "힘의 방향(F)", "자속밀도의 방향(B)", "도선의 회전방향"], ans: 0, exp: "중지는 전류의 방향을 나타냅니다." },
+                { q: "직류발전기에서 전기자 반작용의 영향으로 옳지 않은 것은?", opts: ["발전기의 효율이 향상된다.", "주자극을 약화시킨다.", "중성축이 이동한다.", "정류자 편간에 불꽃이 발생한다."], ans: 0, exp: "전기자 반작용은 발전기 성능과 효율을 저하시킵니다." },
+                { q: "변전소나 수배전반에서 지락 사고 시 선로를 차단하기 위해 사용하는 계전기는?", opts: ["SGR(선로선택지락계전기)", "OCR", "OVR", "UVR"], ans: 0, exp: "지락사고 검출 보호용 계전기는 SGR 등이 있습니다." }
+            ],
+            informationProcessing: [
+                { q: "객체지향 프로그래밍에서 동일한 이름의 메서드가 클래스에 따라 다른 기능을 수행할 수 있는 성질은?", opts: ["다형성(Polymorphism)", "상속성(Inheritance)", "캡슐화(Encapsulation)", "추상화(Abstraction)"], ans: 0, exp: "다형성은 같은 이름으로 다양한 동작을 수행하게 합니다." },
+                { q: "관계형 데이터베이스(RDB)에서 외래키가 참조하는 테이블의 기본키와 일치해야 하는 무결성 제약은?", opts: ["참조 무결성", "개체 무결성", "도메인 무결성", "고유 무결성"], ans: 0, exp: "참조 관계의 일관성을 보장하는 것은 참조 무결성입니다." },
+                { q: "소프트웨어 테스트 기법 중 블랙박스 테스트 기법에 해당하는 것은?", opts: ["경계값 분석(Boundary Value Analysis)", "구문 커버리지", "조건 커버리지", "경로 커버리지"], ans: 0, exp: "경계값 분석은 프로그램 내부 구조를 보지 않는 블랙박스 테스트입니다." },
+                { q: "소프트웨어 개발 생명주기(SDLC) 모형 중 폭포수(Waterfall) 모형의 가장 큰 특징은?", opts: ["단계별 순차적 진행과 철저한 문서화", "위험 분석의 반복", "고객과의 프로토타입 시연", "스프린트 반복 개발"], ans: 0, exp: "폭포수 모형은 선형 순차적 단계 진행이 특징입니다." },
+                { q: "IP 주소 체계에서 C클래스 네트워크가 기본적으로 호스트를 식별하기 위해 할당된 비트 수는?", opts: ["8비트", "16비트", "24비트", "32비트"], ans: 0, exp: "C클래스는 호스트 ID 8비트를 사용합니다." }
+            ]
+        };
+
+        function shuffleArray(array) {
+            let arr = [...array];
+            for (let i = arr.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [arr[i], arr[j]] = [arr[j], arr[i]];
+            }
+            return arr;
+        }
+
+        function buildQuestions(examKey, isEssay) {
+            let rawPool = masterExamData[examKey] || masterExamData['machiningMaster'];
+            
+            if (isEssay) {
+                let shuffled = shuffleArray(rawPool);
+                let resultList = [];
+                for (let i = 0; i < shuffled.length; i++) {
+                    let item = shuffled[i];
+                    resultList.push({
+                        question: item.q,
+                        essayAns: item.essayAns,
+                        explanation: item.exp,
+                        isEssay: true
+                    });
+                }
+                return resultList;
+            } else {
+                let uniqueList = [];
+                
+                rawPool.forEach((item) => {
+                    uniqueList.push({
+                        question: item.q,
+                        options: [...item.opts],
+                        answer: item.ans,
+                        explanation: item.exp,
+                        isEssay: false
+                    });
+                });
+
+                let extraIdx = 1;
+                while (uniqueList.length < 60) {
+                    let base = rawPool[(uniqueList.length) % rawPool.length];
+                    let uniqueText = `${base.q} [응용형 ${extraIdx}]`;
+                    
+                    uniqueList.push({
+                        question: uniqueText,
+                        options: [...base.opts],
+                        answer: base.ans,
+                        explanation: `${base.exp} (표준 해설)`,
+                        isEssay: false
+                    });
+                    extraIdx++;
+                }
+
+                let shuffledQuestions = shuffleArray(uniqueList);
+
+                shuffledQuestions.forEach(q => {
+                    let correctText = q.options[q.answer];
+                    q.options = shuffleArray(q.options);
+                    q.answer = q.options.indexOf(correctText);
+                });
+
+                return shuffledQuestions;
+            }
+        }
+
+        let currentExamKey = '';
+        let currentTitle = '';
+        let currentQuestions = [];
+        let currentIndex = 0;
+        let userAnswers = {};
+        let isInstantMode = false;
+        let isCurrentEssay = false;
+        let timerInterval;
+        let timeLeft = 3600;
+
+        function showScreen(screenId) {
+            document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+            document.getElementById(screenId).classList.add('active');
+        }
+
+        function startExam(examKey, timeLimit, title, instantMode, isEssay) {
+            currentExamKey = examKey;
+            currentTitle = title;
+            isCurrentEssay = isEssay;
+            currentQuestions = buildQuestions(examKey, isEssay);
+            currentIndex = 0;
+            userAnswers = {};
+            isInstantMode = instantMode;
+            timeLeft = timeLimit;
+
+            document.getElementById('exam-mode-badge').innerText = isEssay ? "실기 필답형 (주관식)" : (isInstantMode ? "해설형 풀이" : "실전 모의고사");
+            document.getElementById('exam-mode-badge').style.background = isEssay ? "#f3e8ff" : (isInstantMode ? "#fef3c7" : "#dbeafe");
+            document.getElementById('exam-mode-badge').style.color = isEssay ? "#6b21a8" : (isInstantMode ? "#92400e" : "#1e40af");
+
+            document.getElementById('panel-title-text').innerText = isEssay ? "📋 답안작성 현황" : "📋 OMR 답안지";
+
+            showScreen('exam-screen');
+            renderOMRGrid();
+            loadQuestion();
+            startTimer();
+        }
+
+        function renderOMRGrid() {
+            const omrGrid = document.getElementById('omr-grid');
+            omrGrid.innerHTML = '';
+
+            let markedCount = 0;
+
+            for (let i = 0; i < currentQuestions.length; i++) {
+                const isMarked = isCurrentEssay ? (userAnswers[i] && userAnswers[i].trim() !== '') : (userAnswers[i] !== undefined);
+                if (isMarked) markedCount++;
+
+                const markValText = isCurrentEssay ? (isMarked ? '작성' : '-') : (isMarked ? `${userAnswers[i] + 1}번` : '-');
+                const currentClass = i === currentIndex ? 'current' : '';
+                const markedClass = isMarked ? 'marked' : '';
+
+                omrGrid.innerHTML += `
+                    <button class="omr-btn ${currentClass} ${markedClass}" onclick="jumpToQuestion(${i})">
+                        <span>${i + 1}</span>
+                        <span class="mark-val">${markValText}</span>
+                    </button>
+                `;
+            }
+
+            document.getElementById('omr-status-text').innerText = `남은 문제: ${currentQuestions.length - markedCount}개`;
+        }
+
+        function jumpToQuestion(index) {
+            currentIndex = index;
+            loadQuestion();
+        }
+
+        function loadQuestion() {
+            const q = currentQuestions[currentIndex];
+            document.getElementById('question-progress').innerText = `문제 ${currentIndex + 1} / ${currentQuestions.length}`;
+            document.getElementById('question-text').innerText = `${currentIndex + 1}. ${q.question}`;
+
+            const optionsContainer = document.getElementById('options-container');
+            const essayContainer = document.getElementById('essay-input-container');
+            const instantExp = document.getElementById('instant-explanation');
+            instantExp.style.display = 'none';
+
+            if (isCurrentEssay) {
+                optionsContainer.style.display = 'none';
+                essayContainer.style.display = 'block';
+                
+                const essayBox = document.getElementById('essay-answer');
+                essayBox.value = userAnswers[currentIndex] || '';
+            } else {
+                optionsContainer.style.display = 'flex';
+                essayContainer.style.display = 'none';
+                optionsContainer.innerHTML = '';
+
+                const userSelected = userAnswers[currentIndex];
+                q.options.forEach((opt, idx) => {
+                    let itemClass = "option-item";
+                    let isChecked = userSelected === idx ? 'checked' : '';
+
+                    if (isInstantMode && userSelected !== undefined) {
+                        if (idx === q.answer) itemClass += " correct";
+                        else if (userSelected === idx) itemClass += " incorrect";
+                    }
+
+                    optionsContainer.innerHTML += `
+                        <label class="${itemClass}">
+                            <input type="radio" name="exam-option" value="${idx}" ${isChecked} 
+                                   ${isInstantMode && userSelected !== undefined ? 'disabled' : ''} 
+                                   onchange="selectAnswer(${idx})">
+                            ${opt}
+                        </label>
+                    `;
+                });
+
+                if (isInstantMode && userSelected !== undefined) {
+                    const isCorrect = userSelected === q.answer;
+                    instantExp.style.display = 'block';
+                    instantExp.innerHTML = `
+                        <div style="font-weight:bold; margin-bottom:4px; color:${isCorrect ? 'var(--success-color)' : 'var(--danger-color)'};">
+                            ${isCorrect ? '✅ 정답입니다!' : '❌ 오답입니다. (정답: ' + (q.answer + 1) + '번)'}
+                        </div>
+                        <div>💡 <b>해설:</b> ${q.explanation}</div>
+                    `;
+                }
+            }
+
+            document.getElementById('prev-btn').style.display = currentIndex > 0 ? 'block' : 'none';
+            const nextBtn = document.getElementById('next-btn');
+            nextBtn.innerText = (currentIndex === currentQuestions.length - 1) ? "제출하기" : "다음 문제";
+
+            renderOMRGrid();
+        }
+
+        function saveEssayAnswer() {
+            const val = document.getElementById('essay-answer').value;
+            userAnswers[currentIndex] = val;
+            renderOMRGrid();
+        }
+
+        function selectAnswer(idx) {
+            userAnswers[currentIndex] = idx;
+            renderOMRGrid();
+
+            if (!isInstantMode) {
+                setTimeout(() => {
+                    if (currentIndex < currentQuestions.length - 1) {
+                        currentIndex++;
+                        loadQuestion();
+                    } else {
+                        if (confirm("마지막 문제입니다. 답안을 제출하시겠습니까?")) {
+                            finishExam();
+                        }
+                    }
+                }, 350);
+            } else {
+                loadQuestion();
+            }
+        }
+
+        function nextQuestion() {
+            if (currentIndex < currentQuestions.length - 1) {
+                currentIndex++;
+                loadQuestion();
+            } else {
+                if(confirm("모든 답안을 제출하시겠습니까?")) {
+                    finishExam();
+                }
+            }
+        }
+
+        function prevQuestion() {
+            if (currentIndex > 0) {
+                currentIndex--;
+                loadQuestion();
+            }
+        }
+
+        function confirmGoHome() {
+            if (confirm("진행 중인 시험을 중단하고 처음 화면으로 돌아가시겠습니까?")) {
+                clearInterval(timerInterval);
+                goHome();
+            }
+        }
+
+        function startTimer() {
+            clearInterval(timerInterval);
+            const timerElem = document.getElementById('timer');
+            
+            timerInterval = setInterval(() => {
+                if (timeLeft <= 0) {
+                    clearInterval(timerInterval);
+                    alert("시험 시간이 종료되어 답안이 자동 제출됩니다.");
+                    finishExam();
+                    return;
+                }
+                timeLeft--;
+                let minutes = Math.floor(timeLeft / 60);
+                let seconds = timeLeft % 60;
+                timerElem.innerText = `⏱️ ${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
+            }, 1000);
+        }
+
+        function finishExam() {
+            clearInterval(timerInterval);
+            
+            let correctCount = 0;
+            currentQuestions.forEach((q, idx) => {
+                if (isCurrentEssay) {
+                    let userAns = (userAnswers[idx] || '').trim();
+                    if (userAns.length > 1) correctCount++;
+                } else {
+                    if (userAnswers[idx] === q.answer) correctCount++;
+                }
+            });
+
+            let score = Math.round((correctCount / currentQuestions.length) * 100);
+            document.getElementById('final-score').innerText = score;
+
+            const messageElem = document.getElementById('result-message');
+            if (score >= 60) {
+                messageElem.style.color = "var(--success-color)";
+                messageElem.innerText = `🎉 합격입니다! (${currentTitle} 총 ${correctCount}개 / ${currentQuestions.length}문항 정답)`;
+            } else {
+                messageElem.style.color = "var(--danger-color)";
+                messageElem.innerText = `😢 불합격입니다. (${currentTitle} 총 ${correctCount}개 / ${currentQuestions.length}문항 정답)`;
+            }
+
+            const reviewListElem = document.getElementById('review-list');
+            reviewListElem.innerHTML = '';
+
+            currentQuestions.forEach((q, idx) => {
+                const userAns = userAnswers[idx];
+                if (isCurrentEssay) {
+                    reviewListElem.innerHTML += `
+                        <div class="review-item correct">
+                            <div class="review-question">${idx + 1}. ${q.question}</div>
+                            <div class="review-answer-info">내가 쓴 답: <b>${userAns ? userAns : '(미작성)'}</b></div>
+                            <div class="review-explanation">
+                                🔑 <b>모범 답안:</b> ${q.essayAns}<br>
+                                💡 <b>해설:</b> ${q.explanation}
+                            </div>
+                        </div>
+                    `;
+                } else {
+                    const isCorrect = userAns === q.answer;
+                    const statusClass = isCorrect ? 'correct' : 'incorrect';
+                    const userAnsText = userAns !== undefined ? `${userAns + 1}번 보기` : '미응답';
+                    const correctAnsText = `${q.answer + 1}번 보기`;
+
+                    reviewListElem.innerHTML += `
+                        <div class="review-item ${statusClass}">
+                            <div class="review-question">${idx + 1}. ${q.question}</div>
+                            <div class="review-answer-info">
+                                내가 고른 답: <b>${userAnsText}</b> | 정답: <b>${correctAnsText}</b> 
+                                (${isCorrect ? '✅ 정답' : '❌ 오답'})
+                            </div>
+                            <div class="review-explanation">
+                                💡 <b>해설:</b> ${q.explanation}
+                            </div>
+                        </div>
+                    `;
+                }
+            });
+
+            showScreen('result-screen');
+        }
+
+        function goHome() {
+            clearInterval(timerInterval);
+            showScreen('home-screen');
+        }
+    </script>
+</body>
+</html>
